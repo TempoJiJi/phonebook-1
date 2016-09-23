@@ -1,8 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <assert.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<time.h>
+#include<assert.h>
 
 #include IMPL
 
@@ -43,6 +43,11 @@ int main(int argc, char *argv[])
     e = pHead;
     e->pNext = NULL;
 
+#if defined(OPT)
+    hash_table *my_hash_table;
+    my_hash_table = create_hash_table();
+#endif
+
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
@@ -52,7 +57,11 @@ int main(int argc, char *argv[])
             i++;
         line[i - 1] = '\0';
         i = 0;
-        e = append(line, e);
+#if defined(OPT)
+        append(line,my_hash_table);	//for OPT
+#else
+        e = append(line, e);	//for ORI
+#endif
     }
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time1 = diff_in_second(start, end);
@@ -66,18 +75,26 @@ int main(int argc, char *argv[])
     char input[MAX_LAST_NAME_SIZE] = "zyxel";
     e = pHead;
 
+    /*
     assert(findName(input, e) &&
            "Did you implement findName() in " IMPL "?");
     assert(0 == strcmp(findName(input, e)->lastName, "zyxel"));
-
+    */
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
     /* compute the execution time */
+#if defined(OPT)
+    clock_gettime(CLOCK_REALTIME, &start);
+    findName(input,my_hash_table);
+    clock_gettime(CLOCK_REALTIME, &end);
+    cpu_time2 = diff_in_second(start, end);
+#else
     clock_gettime(CLOCK_REALTIME, &start);
     findName(input, e);
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time2 = diff_in_second(start, end);
+#endif
 
     FILE *output;
 #if defined(OPT)
