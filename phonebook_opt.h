@@ -3,7 +3,8 @@
 
 #define MAX_LAST_NAME_SIZE 16
 #define OPT 1
-#define SIZE 102400
+#define SIZE 42737
+
 
 typedef struct __PHONE_BOOK_DETAILS {
     char firstName[16];
@@ -27,9 +28,11 @@ typedef struct _HAST_TABLE {
     entry **table;
 } hash_table;
 
-unsigned int hash(char *str);
-hash_table *create_hash_table();
-entry *findName(char lastname[], hash_table *hashtable);
-void append(char lastName[], hash_table *hashtable);
+hash_table *my_hash_table;
+
+int hash(char *str);
+void create_hash_table();
+entry *findName(char *lastName);
+void append(char *lastName);
 
 #endif
