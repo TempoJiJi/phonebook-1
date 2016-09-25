@@ -3,7 +3,11 @@
 #include<string.h>
 #include<time.h>
 #include<assert.h>
+#include<pthread.h>
+#include<stdbool.h>
+#define MAX_THREAD 16
 
+FILE *fp;
 #include IMPL
 
 #define DICT_FILE "./dictionary/words.txt"
@@ -21,9 +25,25 @@ static double diff_in_second(struct timespec t1, struct timespec t2)
     return (diff.tv_sec + diff.tv_nsec / 1000000000.0);
 }
 
+#if defined (OPT)
+void work()
+{
+    char line[16];
+    int i = 0;
+    while(!feof(fp)) {
+        if(fgets(line,sizeof(line),fp)!=NULL) {
+            while(line[i] != '\0')
+                i++;
+            line[i-1] = '\0';
+            i=0;
+            append(line);
+        }
+    }
+}
+#endif
+
 int main(int argc, char *argv[])
 {
-    FILE *fp;
     int i = 0;
     char line[MAX_LAST_NAME_SIZE];
     struct timespec start, end;
@@ -41,42 +61,23 @@ int main(int argc, char *argv[])
     pHead = (entry *) malloc(sizeof(entry));
     printf("size of entry : %lu bytes\n", sizeof(entry));
     e = pHead;
-#if defined(BK)
-    /* Initialize head node */
-    strcpy(pHead -> lastName,"aaaaaa");
-    for(i=0; i<MAX_SIZE; i++)
-        e->pNext[i] = NULL;
-#else
     e->pNext = NULL;
-#endif
 
 #if defined(OPT)
-    hash_table *my_hash_table;
-    my_hash_table = create_hash_table();
+    create_hash_table();
 #endif
 
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
+
 #if defined(OPT)
     clock_gettime(CLOCK_REALTIME, &start);
-    while (fgets(line, sizeof(line), fp)) {
-        while (line[i] != '\0')
-            i++;
-        line[i - 1] = '\0';
-        i = 0;
-        append(line,my_hash_table);	//for OPT
-    }
-#elif defined(BK)
-    clock_gettime(CLOCK_REALTIME, &start);
-    while (fgets(line, sizeof(line), fp)) {
-        e = pHead;
-        while (line[i] != '\0')
-            i++;
-        line[i - 1] = '\0';
-        i = 0;
-        append(line,e);	//for OPT
-    }
+    pthread_t Thread[MAX_THREAD];
+    for(i=0; i<MAX_THREAD; i++)
+        pthread_create(&Thread[i],NULL,(void*)work,NULL);
+    for(i=0; i<MAX_THREAD; i++)
+        pthread_join(Thread[i],NULL);
 #else
     clock_gettime(CLOCK_REALTIME, &start);
     while (fgets(line, sizeof(line), fp)) {
@@ -93,28 +94,31 @@ int main(int argc, char *argv[])
     /* close file as soon as possible */
     fclose(fp);
 
-    /* the givn last name to find */
-    char input[MAX_LAST_NAME_SIZE] = "zyxe";
-
     e = pHead;
 
-#if defined (OPT)
-    assert(findName(input,my_hash_table) &&
+    /* the givn last name to find */
+    char input[MAX_LAST_NAME_SIZE] = "zyxel";
+    e = pHead;
+
+#if defined(OPT)
+    assert(findName(input) &&
            "Did you implement findName() in " IMPL "?");
-    assert(0 == strcmp(findName(input, my_hash_table)->lastName, "zyxel"));
-#elif !defined(FUZ)
-    assert(findName(input, e) &&
+    assert(0 == strcmp(findName(input)->lastName, "zyxel"));
+#else
+    assert(findName(input,e ) &&
            "Did you implement findName() in " IMPL "?");
     assert(0 == strcmp(findName(input, e)->lastName, "zyxel"));
 #endif
 
+
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
+
     /* compute the execution time */
 #if defined(OPT)
     clock_gettime(CLOCK_REALTIME, &start);
-    findName(input,my_hash_table);
+    findName(input);
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time2 = diff_in_second(start, end);
 #else
@@ -135,6 +139,9 @@ int main(int argc, char *argv[])
 
     printf("execution time of append() : %lf sec\n", cpu_time1);
     printf("execution time of findName() : %lf sec\n", cpu_time2);
+
+    if (pHead->pNext) free(pHead->pNext);
+    free(pHead);
 
     return 0;
 }

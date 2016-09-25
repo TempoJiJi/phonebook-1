@@ -1,11 +1,13 @@
-#ifndef _PHONEBOOK_H
-#define _PHONEBOOK_H
+#ifndef _FUZZY_SEARCH_H
+#define _FUZZY_SEARCH_H
 
+#define FUZ 1
 #define MAX_LAST_NAME_SIZE 16
-#define OPT 1
-#define SIZE 102400
+#define MAX_SIZE 2
 
-typedef struct __PHONE_BOOK_DETAILS {
+/* fuzzy_search version */
+
+typedef struct __DETAILS {
     char firstName[16];
     char email[16];
     char phone[10];
@@ -23,13 +25,7 @@ typedef struct __PHONE_BOOK_ENTRY {
     Details *details;
 } entry;
 
-typedef struct _HAST_TABLE {
-    entry **table;
-} hash_table;
-
-int hash(char *str);
-hash_table *create_hash_table();
-entry *findName(char lastname[], hash_table *hashtable);
-void append(char lastName[], hash_table *hashtable);
+void findName(char lastname[], entry *pHead);
+entry *append(char lastName[], entry *e);
 
 #endif

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
+#include <pthread.h>
 #include "phonebook_opt.h"
 
 int hash(char *str)
@@ -12,37 +14,35 @@ int hash(char *str)
     return (hash_value % SIZE);
 }
 
-hash_table *create_hash_table()
+void create_hash_table()
 {
-    hash_table *my_table;
+    int i;
 
     /* Allocate memory for hashtable*/
-    my_table = malloc(sizeof(hash_table));
-    my_table->table = malloc(sizeof(entry *) * SIZE);
+    my_hash_table = malloc(sizeof(hash_table));
+    my_hash_table->table = malloc(sizeof(entry *) * SIZE);
 
     /* Initialize the elements of the table */
-    for(int i=0; i<SIZE; i++)
-        my_table->table[i] = NULL;
-
-    return my_table;
+    for(i=0; i<SIZE; i++)
+        my_hash_table->table[i] = NULL;
 }
 
-entry *findName(char *lastName, hash_table *hashtable)
+entry *findName(char *lastName)
 {
     entry *list;
     int hash_value = hash(lastName);
 
-    /*	 Searching from hash_table   */
-    for(list = hashtable->table[hash_value] ; list!=NULL ; list = list->pNext) {
-        if(strcmp(lastName,list->lastName)==0)
+    /*   Searching from hash_table   */
+    for(list = my_hash_table->table[hash_value] ; list!=NULL ; list = list->pNext) {
+        if(strcmp(lastName,list->lastName)==0) {
             return list;
+        }
     }
-
     /* FAIL */
     return NULL;
 }
 
-void append(char *lastName,hash_table *hashtable)
+void append(char *lastName)
 {
     entry *new_entry;
     int hash_value = hash(lastName);
@@ -51,6 +51,6 @@ void append(char *lastName,hash_table *hashtable)
 
     /* Creating entry list by hash table */
     strcpy(new_entry->lastName , lastName);
-    new_entry->pNext = hashtable->table[hash_value];
-    hashtable->table[hash_value] = new_entry;
+    new_entry->pNext = my_hash_table->table[hash_value];
+    my_hash_table->table[hash_value] = new_entry;
 }
