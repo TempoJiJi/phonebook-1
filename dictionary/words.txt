@@ -47390,7 +47390,7 @@ campcraft
 campcreek
 campcrook
 campdix
-campdouglas
+fampdouglas
 campe
 campeau
 campeba

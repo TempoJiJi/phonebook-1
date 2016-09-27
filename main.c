@@ -4,6 +4,14 @@
 #include<time.h>
 #include<assert.h>
 
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <sys/io.h>
+#include <sys/mman.h>
+
+
 #include IMPL
 
 #define DICT_FILE "./dictionary/words.txt"
@@ -59,14 +67,29 @@ int main(int argc, char *argv[])
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
 #if defined(OPT)
+    unsigned int size;
+    struct stat buf;
+    /* O_RDONLY = read only */
+    int fd = open (DICT_FILE,O_RDONLY);
+
+    /* Get the size of the file */
+    int status = fstat(fd, &buf);
+    size = buf.st_size;
+
     clock_gettime(CLOCK_REALTIME, &start);
-    while (fgets(line, sizeof(line), fp)) {
-        while (line[i] != '\0')
-            i++;
-        line[i - 1] = '\0';
-        i = 0;
-        append(line,my_hash_table);	//for OPT
+    char *s = mmap(0,size,PROT_READ,MAP_PRIVATE,fd,0);
+    int k = 0;
+    for(i = 0; i < size; i++) {
+        line[k] = s[i];
+        if(s[i] == 10) {
+            line[k] = '\0';
+            k = 0;
+            append(line,my_hash_table);
+            continue;
+        }
+        k++;
     }
+
 #elif defined(BK)
     clock_gettime(CLOCK_REALTIME, &start);
     while (fgets(line, sizeof(line), fp)) {
@@ -94,7 +117,7 @@ int main(int argc, char *argv[])
     fclose(fp);
 
     /* the givn last name to find */
-    char input[MAX_LAST_NAME_SIZE] = "zyxe";
+    char input[MAX_LAST_NAME_SIZE] = "zyxel";
 
     e = pHead;
 

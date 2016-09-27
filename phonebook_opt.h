@@ -3,7 +3,7 @@
 
 #define MAX_LAST_NAME_SIZE 16
 #define OPT 1
-#define SIZE 102400
+#define SIZE 53333
 
 typedef struct __PHONE_BOOK_DETAILS {
     char firstName[16];

@@ -50,7 +50,7 @@ void append(char *lastName,hash_table *hashtable)
     new_entry = (entry *) malloc(sizeof(entry));
 
     /* Creating entry list by hash table */
-    strcpy(new_entry->lastName , lastName);
+    memcpy(new_entry->lastName , lastName,strlen(lastName));
     new_entry->pNext = hashtable->table[hash_value];
     hashtable->table[hash_value] = new_entry;
 }

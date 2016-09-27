@@ -1,7 +1,7 @@
 CC ?= gcc
 CFLAGS_common ?= -Wall -std=gnu99 -g 
 CFLAGS_orig = -O0
-CFLAGS_opt  = -O0 -pthread
+CFLAGS_opt  = -O0 
 
 EXEC = phonebook_orig phonebook_opt fuzzy_search bk_tree
 all: $(EXEC)
@@ -36,7 +36,7 @@ run: $(EXEC)
 cache-test: $(EXEC)
 	perf stat --repeat 100 \
 		-e cache-misses,cache-references,instructions,cycles \
-		./phonebook_ori
+		./phonebook_orig
 	perf stat --repeat 100 \
 		-e cache-misses,cache-references,instructions,cycles \
 		./phonebook_opt
